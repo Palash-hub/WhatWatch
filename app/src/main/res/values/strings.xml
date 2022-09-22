@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">WhatWatch</string>
+    <string name="click_me">Click me!</string>
+    <string name="just_whatch">Уже смотрел</string>
+    <string name="main_text">Click me!</string>
+    <string name="text_000">Дом совы</string>
+    <string name="text_001">Вакфу</string>
+    <string name="text_002">Нормальный только я</string>
+    <string name="text_003">Эдди орёл</string>
+    <string name="text_004">По соображениям совести</string>
+    <string name="text_005">Между двух огней</string>
+    <string name="text_006">Пора вернуться домой на рождество</string>
+    <string name="text_007">Пряности и страсти</string>
+    <string name="text_008">Двадцать одно</string>
+    <string name="text_009">Арифурэта сильнейший ремесленник в мире</string>
+    <string name="text_010">‌Добро пожаловать в класс превосходства</string>
+    <string name="text_011">Этот глупый свин не понимает мечту девочки-зайки</string>
+    <string name="text_012">Проклятый дом</string>
+    <string name="text_013">‌Каждый 88</string>
+    <string name="text_014">‌МОБ психо 100</string>
+    <string name="text_015">‌Платформа</string>
+    <string name="text_016">‌Будни старшеклассников</string>
+    <string name="text_017">Госпожа Кагуя в любви как на войне</string>
+    <string name="text_018">‌Семь смертных грехов</string>
+    <string name="text_019">‌Академия Амбрелла</string>
+    <string name="text_020">Клинок рассекающий демонов</string>
+    <string name="text_021">‌Черный клевер</string>
+    <string name="text_022">‌Герой при заклятом врага</string>
+    <string name="text_023">The backwoods Gospel</string>
+
+
+
+</resources>
