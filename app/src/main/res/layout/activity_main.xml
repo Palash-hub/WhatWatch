@@ -43,10 +43,35 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
-            android:text="X"
+            android:text="@string/x"
             app:layout_constraintBottom_toTopOf="@+id/main_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <EditText
+            android:id="@+id/addText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:ems="10"
+            android:hint="Название фильма"
+            android:inputType="textPersonName"
+            android:minHeight="48dp"
+            android:text="@string/Addtext"
+            app:layout_constraintBottom_toTopOf="@+id/countText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/addButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/addbutton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/addText" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </RelativeLayout>

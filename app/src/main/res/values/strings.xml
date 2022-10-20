@@ -27,7 +27,9 @@
     <string name="text_021">‌Черный клевер</string>
     <string name="text_022">‌Герой при заклятом врага</string>
     <string name="text_023">The backwoods Gospel</string>
-
+    <string name="x">X</string>
+    <string name="Addtext">Name</string>
+    <string name="addbutton">хочу посмтреть</string>
 
 
 </resources>
