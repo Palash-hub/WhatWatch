@@ -30,6 +30,7 @@
     <string name="x">X</string>
     <string name="Addtext">Name</string>
     <string name="addbutton">хочу посмтреть</string>
-
+    <string name="addButton">Button</string>
+    <string name="addName">Name</string>
 
 </resources>

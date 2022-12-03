@@ -1,25 +1,40 @@
 package com.example.whatwatch;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-
-
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
-
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.sql.Time;
 import java.util.ArrayList;
-
 import java.util.Random;
-
-
 import io.paperdb.Paper;
 
-public class MainActivity extends AppCompatActivity {
 
+public class MainActivity extends AppCompatActivity {
+    String folderToSave = Environment.getExternalStorageDirectory().toString();
     Random random;
     TextView mainText;
     TextView addText;
@@ -30,11 +45,23 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> movieList;
 
+    static final int GALLERY_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Button button = findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                photoPickerIntent.setType("image/*");
+                startActivityForResult(photoPickerIntent, GALLERY_REQUEST);
+
+            }
+        });
 
         Paper.init(this);
         mainText = findViewById(R.id.main_text);
@@ -46,11 +73,8 @@ public class MainActivity extends AppCompatActivity {
 
         arrayList.clear();
         movieList = Paper.book().read("arrayList");
-        arrayList.addAll(0,movieList);
-//            if((arrayList.size() < movieList.size())){
-//                movieList.clear();
-//                movieList.addAll(0,arrayList);
-//            }
+        if (movieList != null){arrayList.addAll(0,movieList);}
+
         System.out.println("создание"+movieList);
         System.out.println("создание"+arrayList);
 
@@ -110,51 +134,75 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-//                if ((arrayList!= null)&(movieList!= null)){
-//                    if((arrayList.size() > movieList.size())){
-//                        arrayList.clear();
-//                        arrayList.addAll(0,movieList);
-//                    }
-//                    if((arrayList.size() < movieList.size())){
-//                        movieList.clear();
-//                        movieList.addAll(0,arrayList);
-//                    }
-//                }
-
                 movieList = Paper.book().read("arrayList");
                 System.out.println("центр"+movieList);
                 System.out.println("центр"+arrayList);
                 mainText.setText(""+movieList.get(random.nextInt(movieList.size())));
                 countText.setText(""+movieList.size());
+                getImageBitmap(folderToSave+mainText.getText()+".jpg");
             }
         });
 
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+        Bitmap bitmap = null;
+        ImageView imageView = (ImageView) findViewById(R.id.imageView);
+
+        switch(requestCode) {
+            case GALLERY_REQUEST:
+                if(resultCode == RESULT_OK){
+                    Uri selectedImage = imageReturnedIntent.getData();
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    imageView.setImageBitmap(bitmap);
+
+                    SavePicture(imageView,folderToSave);
+                }
+        }
+    }
 
 
+    private String SavePicture(ImageView iv, String folderToSave)
+    {
+        OutputStream fOut = null;
 
-//        arrayList.add(getString(R.string.text_000));
-//        arrayList.add(getString(R.string.text_001));
-//        arrayList.add(getString(R.string.text_002));
-//        arrayList.add(getString(R.string.text_003));
-//        arrayList.add(getString(R.string.text_004));
-//        arrayList.add(getString(R.string.text_005));
-//        arrayList.add(getString(R.string.text_006));
-//        arrayList.add(getString(R.string.text_007));
-//        arrayList.add(getString(R.string.text_008));
-//        arrayList.add(getString(R.string.text_009));
-//        arrayList.add(getString(R.string.text_010));
-//        arrayList.add(getString(R.string.text_011));
-//        arrayList.add(getString(R.string.text_012));
-//        arrayList.add(getString(R.string.text_013));
-//        arrayList.add(getString(R.string.text_014));
-//        arrayList.add(getString(R.string.text_015));
-//        arrayList.add(getString(R.string.text_016));
-//        arrayList.add(getString(R.string.text_017));
-//        arrayList.add(getString(R.string.text_018));
-//        arrayList.add(getString(R.string.text_019));
-//        arrayList.add(getString(R.string.text_020));
-//        arrayList.add(getString(R.string.text_022));
-//        arrayList.add(getString(R.string.text_023));
+        try {
+            File file = new File(folderToSave, mainText.getText()+".jpg"); // создать уникальное имя для файла основываясь на дате сохранения
+            fOut = new FileOutputStream(file);
 
+            Bitmap bitmap = ((BitmapDrawable) iv.getDrawable()).getBitmap();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // сохранять картинку в jpeg-формате с 85% сжатия.
+            fOut.flush();
+            fOut.close();
+            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(),  file.getName()); // регистрация в фотоальбоме
+        }
+        catch (Exception e) // здесь необходим блок отслеживания реальных ошибок и исключений, общий Exception приведен в качестве примера
+        {
+            return e.getMessage();
+        }
+        return "";
+    }
+
+    private Bitmap getImageBitmap(String url) {
+        Bitmap bm = null;
+        try {
+            URL aURL = new URL(url);
+            URLConnection conn = aURL.openConnection();
+            conn.connect();
+            InputStream is = conn.getInputStream();
+            BufferedInputStream bis = new BufferedInputStream(is);
+            bm = BitmapFactory.decodeStream(bis);
+            bis.close();
+            is.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error getting bitmap", e);
+        }
+        return bm;
     }
 }
