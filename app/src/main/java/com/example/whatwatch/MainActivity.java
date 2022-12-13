@@ -2,8 +2,11 @@ package com.example.whatwatch;
 
 import static android.content.ContentValues.TAG;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,7 +22,18 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
+
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,31 +56,26 @@ public class MainActivity extends AppCompatActivity {
     Button JustwhatchButton;
     TextView countText;
     ArrayList<String> arrayList = new ArrayList<String>();
-
+    ImageView imageView;
     ArrayList<String> movieList;
-
-    static final int GALLERY_REQUEST = 1;
+    StorageReference storageRef;
+    private Uri uploadUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button button = findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
-                startActivityForResult(photoPickerIntent, GALLERY_REQUEST);
 
-            }
-        });
+        Button button = findViewById(R.id.button);
 
         Paper.init(this);
+
         mainText = findViewById(R.id.main_text);
         random = new Random();
+        storageRef = FirebaseStorage.getInstance().getReference("ImageDB");
         JustwhatchButton = findViewById(R.id.button3);
+        imageView = findViewById(R.id.imageView);
         countText = findViewById(R.id.countText);
         addText = findViewById(R.id.addText);
         addButton = findViewById(R.id.addButton);
@@ -139,70 +148,64 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("центр"+arrayList);
                 mainText.setText(""+movieList.get(random.nextInt(movieList.size())));
                 countText.setText(""+movieList.size());
-                getImageBitmap(folderToSave+mainText.getText()+".jpg");
+                storageRef.child(mainText.getText().toString()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        Picasso.get().load(uri).into(imageView);
+                        System.out.println((uri));
+
+                    }
+                });
             }
         });
 
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getImage();
+            }
+        });
     }
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-        Bitmap bitmap = null;
-        ImageView imageView = (ImageView) findViewById(R.id.imageView);
-
-        switch(requestCode) {
-            case GALLERY_REQUEST:
-                if(resultCode == RESULT_OK){
-                    Uri selectedImage = imageReturnedIntent.getData();
-                    try {
-                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    imageView.setImageBitmap(bitmap);
-
-                    SavePicture(imageView,folderToSave);
-                }
+        if(requestCode == 1 && data != null && data.getData() != null){
+            if(resultCode == RESULT_OK){
+                Log.d("MyLog","Image URI : "+ data.getData());
+                imageView.setImageURI(data.getData());
+                upLoad();
+            }
         }
     }
 
-
-    private String SavePicture(ImageView iv, String folderToSave)
-    {
-        OutputStream fOut = null;
-
-        try {
-            File file = new File(folderToSave, mainText.getText()+".jpg"); // создать уникальное имя для файла основываясь на дате сохранения
-            fOut = new FileOutputStream(file);
-
-            Bitmap bitmap = ((BitmapDrawable) iv.getDrawable()).getBitmap();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // сохранять картинку в jpeg-формате с 85% сжатия.
-            fOut.flush();
-            fOut.close();
-            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(),  file.getName()); // регистрация в фотоальбоме
-        }
-        catch (Exception e) // здесь необходим блок отслеживания реальных ошибок и исключений, общий Exception приведен в качестве примера
-        {
-            return e.getMessage();
-        }
-        return "";
+    private void getImage(){
+        Intent intentChooser = new Intent();
+        intentChooser.setType("image/*");
+        intentChooser.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intentChooser,1);
     }
 
-    private Bitmap getImageBitmap(String url) {
-        Bitmap bm = null;
-        try {
-            URL aURL = new URL(url);
-            URLConnection conn = aURL.openConnection();
-            conn.connect();
-            InputStream is = conn.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-            bm = BitmapFactory.decodeStream(bis);
-            bis.close();
-            is.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error getting bitmap", e);
-        }
-        return bm;
+    private void upLoad(){
+        Bitmap bitmap =((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100,baos);
+        byte[] byteArray = baos.toByteArray();
+        final StorageReference myRef = storageRef.child((String) mainText.getText());
+        UploadTask up = myRef.putBytes(byteArray);
+        Task<Uri> task = up.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                return myRef.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                uploadUri = task.getResult();
+            }
+        });
     }
+
 }

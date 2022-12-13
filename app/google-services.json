@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "873814114314",
+    "project_id": "whatwatch-ec665",
+    "storage_bucket": "whatwatch-ec665.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873814114314:android:4649e1a555cfff42439ff3",
+        "android_client_info": {
+          "package_name": "com.example.whatwatch"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "873814114314-9o8qffhc3h6tj7trlj2bvir13r28nkof.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRjyQrVcz_vZlMBNyp2deO9HlnZ4wh6Wk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "873814114314-9o8qffhc3h6tj7trlj2bvir13r28nkof.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
